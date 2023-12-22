@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "description": "A NodeJs tool that converts html or a url to PDF",
+  "module": "lib/index.js",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "lib/"
+  ],
+  "types": "lib/index.d.ts",
+  "typings": "lib/index.d.ts",
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "build:cjs": "tsc",
+    "build:es": "tsc -m esNext --outDir lib",
+    "build": "yarn build:cjs && yarn build:es",
+    "docs": "npx typedoc src/index.ts"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "name": "hd-html2pdf",
+  "author": "AhmadHddad",
+  "keywords": [],
+  "repository": "https://github.com/AhmadHddad/hd-html2pdf",
+  "bugs": "https://github.com/AhmadHddad/hd-html2pdf/issues",
+  "devDependencies": {
+    "@types/node": "^20.8.7",
+    "fix-esm-import-path": "^1.4.0",
+    "tslib": "^2.4.0",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "puppeteer": "^21.6.1",
+    "hd-utils": "file:hd-utils-1.0.9.tgz"
+  }
+}
