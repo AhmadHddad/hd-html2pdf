@@ -10,7 +10,7 @@ import hdHtml2Pdf from 'hd-html2pdf';
 `
 
 `
-const pdfBuffer = await hdHtml2Pdf({url:"www.google.com"}); // returns ArrayBuffer
+const pdfBuffer = await hdHtml2Pdf({url:"www.google.com"}); // returns Buffer
 `
 
 * Make sure that you pass either an HTML string or url.
