@@ -28,7 +28,7 @@
   },
   "name": "hd-html2pdf",
   "author": "AhmadHddad",
-  "keywords": [],
+  "keywords": ["html2pdf","AhmadHddad", "hd-utils", "hd", "PDF", "canvas", "url"],
   "repository": "https://github.com/AhmadHddad/hd-html2pdf",
   "bugs": "https://github.com/AhmadHddad/hd-html2pdf/issues",
   "devDependencies": {
