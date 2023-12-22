@@ -9,6 +9,7 @@ export type HdHtml2PdfParams = {
   emulationMediaType?: 'screen' | 'print';
   getPage?: (page: Page) => Promise<void>;
   waitUntil?: PuppeteerLifeCycleEvent;
+  headers?: Record<string, string>;
   pageFunction?: Parameters<Page['evaluate']>[0];
   fileName?: string;
   pdfHeight?: 'bodyHeight' | number;
@@ -21,11 +22,11 @@ export default async function hdHtml2Pdf({
   pageFunction,
   pdfHeight = 'bodyHeight',
   getPage,
+  headers,
   width = 1280,
   emulationMediaType = 'screen',
   waitUntil = 'networkidle0',
 }: HdHtml2PdfParams): Promise<Buffer> {
-  
   if (!html && !url) throw new Error('a Url or Html is required');
 
   if (url) {
@@ -61,6 +62,10 @@ export default async function hdHtml2Pdf({
   });
   // Website URL to export as pdf
 
+  if (headers) {
+    await page.setExtraHTTPHeaders(headers);
+  }
+
   if (url) {
     await page.goto(url, { waitUntil });
   } else {
@@ -95,4 +100,3 @@ export default async function hdHtml2Pdf({
     printBackground: true, // Print background graphics
   });
 }
-
