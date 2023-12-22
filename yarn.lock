@@ -351,9 +351,10 @@ hd-intersection-observer@^1.0.0:
   resolved "https://registry.yarnpkg.com/hd-intersection-observer/-/hd-intersection-observer-1.0.1.tgz#445008c485f06204cd128a34660a11f6681d75e4"
   integrity sha512-mIOAgLRgO+3iynCVx+jJwYd2HTCnnKtitsHr69YjdMtsjpyX+gHF9BIczr1UPoNnEKn3WVvFGJvA825WhYDEgQ==
 
-"hd-utils@file:hd-utils-1.0.9.tgz":
+hd-utils@^1.0.9:
   version "1.0.9"
-  resolved "file:hd-utils-1.0.9.tgz#dd10ad7b1f0fab05f1ba40a7c859ca05acbdb2c8"
+  resolved "https://registry.yarnpkg.com/hd-utils/-/hd-utils-1.0.9.tgz#bc66a722ed23634b2456f2457df013503b4e9030"
+  integrity sha512-GGNLhEk374G3g9tqkdPY2K67jbve/9Zxtbu4tO9xr73GOILDXQ+4ENT8sEwVSF6OOn9GdhHIM42drbzJrJEwXA==
   dependencies:
     hd-intersection-observer "^1.0.0"
 
