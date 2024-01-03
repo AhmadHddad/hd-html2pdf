@@ -1,6 +1,13 @@
 import puppeteer from 'puppeteer-core';
-import { Page, PuppeteerLifeCycleEvent, executablePath } from 'puppeteer';
-import { addHttpToURL, isURL } from 'hd-utils';
+import {
+  LaunchOptions,
+  Page,
+  PuppeteerLifeCycleEvent,
+  Viewport,
+  WaitForOptions,
+  executablePath,
+} from 'puppeteer';
+import { addHttpToURL, isURL, joinObjects } from 'hd-utils';
 
 export type HdHtml2PdfParams = {
   /**
@@ -59,19 +66,30 @@ export type HdHtml2PdfParams = {
    * @default 100
    */
   padding?: number;
+  launchOptions?: LaunchOptions;
+  goToUrlOptions?: WaitForOptions & {
+    referer?: string;
+    referrerPolicy?: string;
+  };
+  htmlContentOptions?: WaitForOptions;
+  viewPortOptions?: Viewport;
 };
 
 export default async function hdHtml2Pdf({
   html,
   url,
   fileName,
+  launchOptions,
   pageFunction,
   pdfWidth = 1280,
   pdfHeight = 'bodyHeight',
+  viewPortOptions,
   getPage,
   httpHeaders,
   viewPortWidth = 1280,
   width = 1280,
+  goToUrlOptions,
+  htmlContentOptions,
   padding = 100,
   emulationMediaType = 'screen',
   waitUntil = 'networkidle0',
@@ -95,8 +113,8 @@ export default async function hdHtml2Pdf({
     args: ['--no-sandbox'],
     headless: 'new',
     ignoreHTTPSErrors: true,
-    // add this
     executablePath: executablePath(),
+    ...(launchOptions || {}),
   });
 
   // Create a new page
@@ -108,6 +126,7 @@ export default async function hdHtml2Pdf({
     hasTouch: false,
     isMobile: false,
     deviceScaleFactor: 1,
+    ...(viewPortOptions || {}),
   });
   // Website URL to export as pdf
 
@@ -116,9 +135,12 @@ export default async function hdHtml2Pdf({
   }
 
   if (url) {
-    await page.goto(url, { waitUntil });
+    await page.goto(url, joinObjects({ waitUntil }, goToUrlOptions));
   } else {
-    await page.setContent(html!, { waitUntil });
+    await page.setContent(
+      html!,
+      joinObjects({ waitUntil }, htmlContentOptions)
+    );
   }
 
   //To reflect CSS used for screens instead of print
@@ -141,7 +163,7 @@ export default async function hdHtml2Pdf({
   }
 
   // Generate a PDF with a custom size
-  return await page.pdf({
+  const pdf = await page.pdf({
     path: fileName,
     width: `${pdfWidth ?? width}px`,
     height:
@@ -150,4 +172,8 @@ export default async function hdHtml2Pdf({
         : `${pdfHeight}px`, // Height of the entire webpage
     printBackground: true, // Print background graphics
   });
+
+  page.close();
+
+  return pdf;
 }
