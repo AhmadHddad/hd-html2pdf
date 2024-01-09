@@ -1,13 +1,15 @@
 import puppeteer from 'puppeteer-core';
 import {
+  HTTPResponse,
   LaunchOptions,
+  PDFOptions,
   Page,
   PuppeteerLifeCycleEvent,
   Viewport,
   WaitForOptions,
   executablePath,
 } from 'puppeteer';
-import { addHttpToURL, isURL, joinObjects } from 'hd-utils';
+import { addHttpToURL, isURL, joinObjects, toArray } from 'hd-utils';
 
 export type HdHtml2PdfParams = {
   /**
@@ -24,6 +26,12 @@ export type HdHtml2PdfParams = {
    * @default 1280
    */
   viewPortWidth?: number;
+  /**
+  /**
+   * @description the height of the view port for the page, if small it will look like a mobile device.
+   * @default 1280
+   */
+  viewPortHeight?: number;
   /**
    * @description the actual pdf width
    * @default 1280
@@ -52,9 +60,10 @@ export type HdHtml2PdfParams = {
    */
   httpHeaders?: Record<string, string>;
   /**
-   * @description a function that will run in the context of the web page.
+   * @description object that has function that will run in the context of the web page.
+   * externalParams are anything from outside of the function scope like external variable, will be passed to the function as param.
    */
-  pageFunction?: Parameters<Page['evaluate']>[0];
+  pageFunctionObj?: { function: () => void; externalParams?: any[] };
   fileName?: string;
   /**
    * @description height of the pdf file, the default is to wait until the pdf is loaded and then calculate the height so that it will be in a single PDF page.
@@ -73,6 +82,17 @@ export type HdHtml2PdfParams = {
   };
   htmlContentOptions?: WaitForOptions;
   viewPortOptions?: Viewport;
+  pdfOptions?: PDFOptions;
+  /**
+   * @remarks
+   * If set, this takes priority over the `width` and `height` options.
+   * @defaultValue `letter`.
+   */
+  format?: PDFOptions['format'];
+  /**
+   *@description will be called when navigate to URL is successful.
+   */
+  handleGoToUrlResult?: (res: HTTPResponse, page: Page) => void;
 };
 
 export default async function hdHtml2Pdf({
@@ -80,17 +100,20 @@ export default async function hdHtml2Pdf({
   url,
   fileName,
   launchOptions,
-  pageFunction,
+  pageFunctionObj,
   pdfWidth = 1280,
   pdfHeight = 'bodyHeight',
   viewPortOptions,
   getPage,
   httpHeaders,
   viewPortWidth = 1280,
+  handleGoToUrlResult,
   width = 1280,
   goToUrlOptions,
   htmlContentOptions,
+  pdfOptions,
   padding = 100,
+  viewPortHeight = 720,
   emulationMediaType = 'screen',
   waitUntil = 'networkidle0',
 }: HdHtml2PdfParams): Promise<Buffer> {
@@ -122,7 +145,7 @@ export default async function hdHtml2Pdf({
 
   await page.setViewport({
     width: viewPortWidth ?? width,
-    height: 720,
+    height: viewPortHeight,
     hasTouch: false,
     isMobile: false,
     deviceScaleFactor: 1,
@@ -135,7 +158,18 @@ export default async function hdHtml2Pdf({
   }
 
   if (url) {
-    await page.goto(url, joinObjects({ waitUntil }, goToUrlOptions));
+    const toToUrlRes = await page.goto(
+      url,
+      joinObjects({ waitUntil }, goToUrlOptions)
+    );
+
+    if (!toToUrlRes) throw new Error("Couldn't navigate to url");
+
+    if (handleGoToUrlResult) {
+      await Promise.resolve(
+        handleGoToUrlResult?.(toToUrlRes as any, page as any)
+      );
+    }
   } else {
     await page.setContent(
       html!,
@@ -154,12 +188,15 @@ export default async function hdHtml2Pdf({
     );
   }
 
-  if (pageFunction) {
-    await page.evaluate(pageFunction);
+  if (pageFunctionObj) {
+    await page.evaluate(
+      pageFunctionObj.function,
+      ...toArray(pageFunctionObj.externalParams)
+    );
   }
 
   if (getPage) {
-    await Promise.resolve(getPage);
+    await Promise.resolve(getPage(page as any));
   }
 
   // Generate a PDF with a custom size
@@ -171,6 +208,7 @@ export default async function hdHtml2Pdf({
         ? `${bodyHeight + padding}px`
         : `${pdfHeight}px`, // Height of the entire webpage
     printBackground: true, // Print background graphics
+    ...(pdfOptions || {}),
   });
 
   page.close();
