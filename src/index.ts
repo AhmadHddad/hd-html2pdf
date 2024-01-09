@@ -110,6 +110,7 @@ export default async function hdHtml2Pdf({
   handleGoToUrlResult,
   width = 1280,
   goToUrlOptions,
+  format,
   htmlContentOptions,
   pdfOptions,
   padding = 100,
@@ -203,6 +204,7 @@ export default async function hdHtml2Pdf({
   const pdf = await page.pdf({
     path: fileName,
     width: `${pdfWidth ?? width}px`,
+    format,
     height:
       pdfHeight === 'bodyHeight'
         ? `${bodyHeight + padding}px`
